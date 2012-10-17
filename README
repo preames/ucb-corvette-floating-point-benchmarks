@@ -1,0 +1,3 @@
+This repository holds a collection of benchmarks and small example problems used by the Corvette research group at UC Berkeley to assess the utility of techniques for identifying and repairing rounding sensitivities in floating point programs.  
+
+Please be aware that these benchmarks come from a variety of different sources and are not (currently) under a single license.  It probably wouldn't be a major issue to get them re-licensed, but we haven't yet done so.
