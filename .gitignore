@@ -1,0 +1,16 @@
+# Fortran source #
+##################
+*.f90
+
+# Compiled source #
+##################
+*.out
+*.o
+*.so
+*.com
+*.exe
+*.dll
+
+# Logs and Caches #
+###################
+*.swp
