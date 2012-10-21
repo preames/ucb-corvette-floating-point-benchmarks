@@ -120,7 +120,7 @@ dimension a(lda,1)
 !     directly with a saving in time if  rcond  is not needed.
 !     (time for dgeco) = (1 + 9/n)*(time for dgefa) .
 
-!     on entry
+!    on entry
 
 !        a       double precision(lda, n)
 !                the matrix to be factored.
