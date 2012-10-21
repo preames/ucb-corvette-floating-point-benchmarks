@@ -24,12 +24,8 @@ int main() {
 	const int n = 9;
 	const int ndp = 400;
 	int ipvt[n], info;
-	// fortran line 12
-	// dv and dv1 start at index 1
-	double d1, dc[n], dc1[n], dv[n+1], dv1[n+1];
-	// fortran line 13
-	// r, x, v and v1 start are index 1
-	double c[n], r[n+1], x[n][n], v[n], v1[n+1], t1, t2, t3, t4;
+	double d1, dc[n], dc1[n], dv[n], dv1[n];
+	double c[n], r[n], x[n][n], v[n], v1[n], t1, t2, t3, t4;
 
 	job = 0;
 
@@ -49,7 +45,6 @@ int main() {
 	}
 
 	aprint("input data =", 9, dc);
-	// printf("input data = [ %g %g %g %g %g %g %g %g %g ] \n", dc[0], dc[1], dc[2], dc[3], dc[4], dc[5], dc[6], dc[7], dc[8]); 
 
 	// calculate polynomial regression coefficients
 	for (i2 = 1; i2 < n+1; i2++) {
@@ -85,26 +80,21 @@ int main() {
 	}
 
 	// fortran line 70-71
-	aprint("x =", 81, &x[0][0]);
 	dgefa(n, n, x, ipvt, info);
-	aprint("x =", 81, &x[0][0]);
 	dgesl(n, n, x, ipvt, v, job);
-	aprint("x =", 81, &x[0][0]);
 
 	t1 = 0.0;
 
 	for (i1 = 1; i1 < n+1; i1++) {
-		v1[i1] = rint(v[i1-1]);
-		t1 = fmax(t1, fabs(v[i1-1]-v1[i1]));
-		dv[i1] = v[i1-1];
-		dv1[i1] = v1[i1];
+		v1[i1-1] = rint(v[i1-1]);
+		t1 = fmax(t1, fabs(v[i1-1]-v1[i1-1]));
+		dv[i1-1] = v[i1-1];
+		dv1[i1-1] = v1[i1-1];
 	}
 
 	printf("max deviation from integer value = %g \n", (double) t1);
 	aprint("raw regression coefficients =", 9, dv);
-	// printf("raw regression coefficients = [ %g %g %g %g %g %g %g %g %g ] \n", dv[1], dv[2], dv[3], dv[4], dv[5], dv[6], dv[7], dv[8], dv[9]); 
 	aprint("rounded regression coefficients =", 9, dv1);
-	// printf("rounded regression coefficients = [ %g %g %g %g %g %g %g %g %g ] \n", dv1[1], dv1[2], dv1[3], dv1[4], dv1[5], dv1[6], dv1[7], dv1[8], dv1[9]); 
 
 	// fortran line 86
 	d1 = 0.0;
@@ -115,9 +105,9 @@ int main() {
 
 		for (i1 = 1; i1 < n+1; i1++) {
 			if (k == 0 && i1 == 1) {
-				t1 = t1 + dv1[i1];
+				t1 = t1 + dv1[i1-1];
 			} else {
-				t1 = t1 + dv1[i1] * pow(t2, i1 - 1);
+				t1 = t1 + dv1[i1-1] * pow(t2, i1 - 1);
 			}
 		}
 
@@ -126,7 +116,6 @@ int main() {
 	}
 
 	// fortran line 104
-	// printf("regenerated data based on rounded regression coefficients = [ %g %g %g %g %g %g %g %g %g ] \n", dc1[0], dc1[1], dc1[2], dc1[3], dc1[4], dc1[5], dc1[6], dc1[7], dc1[8]); 
 	aprint("regenerated data based on rounded regression coefficients =", 9, dc1);
 	printf("total error from original data = %g \n", d1);
 }
@@ -145,31 +134,23 @@ void dgefa(int lda, int n, double a[lda][n], int ipvt[], int info) {
 		 // find l = pivot index
 
 		// fortran line 176
-		// DEBUG
-		// if (k == 2) aprint("a =", 81, &a[0][0]);
 		l = idamax(n-k+1, &a[k-1][k-1], 1) + k - 1;
-		// printf("l = %d\n", l);
-		// END DEBUG
 		ipvt[k-1] = l;
 
 		// zero pivot implies this column already triangularized
 		if (a[l-1][k-1] == 0.0) goto l40;
 
-		// if (k == 1) aprint("a =", 81, &a[0][0]);
 		// interchange if neccessary
 		if (l == k) goto l10;
 		t = a[k-1][l-1];
 		a[k-1][l-1] = a[k-1][k-1];
 		a[k-1][k-1] = t;
-		// if (k == 1) aprint("a =", 81, &a[0][0]);
 
 l10:
 		// compute multipliers
 		t = -1.0/a[k-1][k-1];
-		// if (k == 1) printf("k =%g\n", t);
 		// DEBUG
 		dscal(n-k,t, &a[k-1][k],1);
-		// if (k == 1) aprint("a =", 81, &a[0][0]);
 
 		// row elimination with column indexing
 		for (j = kp1; j < n+1; j++) {
@@ -180,7 +161,6 @@ l10:
 l20:
 			daxpy(n-k,t,&a[k-1][k],1,&a[j-1][k],1);
 		} // l30
-		// if (k == 1) aprint("a =", 81, &a[0][0]);
 		goto l50;
 l40:
 		info = k;
