@@ -89,12 +89,13 @@ int main() {
 	dgefa(n, n, x, ipvt, info);
 	aprint("x =", 81, &x[0][0]);
 	dgesl(n, n, x, ipvt, v, job);
+	aprint("x =", 81, &x[0][0]);
 
 	t1 = 0.0;
 
 	for (i1 = 1; i1 < n+1; i1++) {
 		v1[i1] = rint(v[i1-1]);
-		t1 = fmax(t1, abs(v[i1-1]-v1[i1]));
+		t1 = fmax(t1, fabs(v[i1-1]-v1[i1]));
 		dv[i1] = v[i1-1];
 		dv1[i1] = v1[i1];
 	}
@@ -121,7 +122,7 @@ int main() {
 		}
 
 		dc1[k] = t1;
-		d1 = d1 + abs(dc1[k] - dc[k]);
+		d1 = d1 + fabs(dc1[k] - dc[k]);
 	}
 
 	// fortran line 104
@@ -211,9 +212,7 @@ void dgesl(int lda, int n, double a[lda][n], int ipvt[], double b[], int job) {
 		b[l-1] = b[k-1];
 		b[k-1] = t;
 l10:
-		tranpose(n,a);
-		daxpy(n-k, t, &a[k][k-1], 1, &b[k], 1);
-		tranpose(n,a);
+		daxpy(n-k, t, &a[k-1][k], 1, &b[k], 1);
 	} // l20
 l30:
 	// now solve u*x = y
@@ -222,9 +221,7 @@ l30:
 		k = n + 1 - kb;
 		b[k-1] = b[k-1]/a[k-1][k-1];
 		t = -b[k-1];
-		tranpose(n,a);
-		daxpy(k-1,t,&a[0][k-1],1,&b[0],1);
-		tranpose(n,a);
+		daxpy(k-1,t,&a[k-1][0],1,&b[0],1);
 	} // l40
 	goto l100;
 
@@ -234,9 +231,7 @@ l50:
 	// first solve trans(u)*y = b
 
 	for (k = 1; k < n+1; k++) {
-		tranpose(n,a);
-		t = ddot(k-1, &a[0][k-1], 1, &b[0], 1);
-		tranpose(n,a);
+		t = ddot(k-1, &a[k-1][0], 1, &b[0], 1);
 		b[k-1] = (b[k-1]-t)/a[k-1][k-1];
 	} // l60
 
@@ -246,9 +241,7 @@ l50:
 	// fortran line 322
 	for (kb = 1; kb < nm1+1; kb++) {
 		k = n - kb;
-		tranpose(n,a);
-		b[k-1] = b[k-1] + ddot(n-k,&a[k][k-1],1,&b[k],1);
-		tranpose(n,a);
+		b[k-1] = b[k-1] + ddot(n-k,&a[k-1][k],1,&b[k],1);
 		l = ipvt[k-1];
 		if (l == k) goto l70;
 		t = b[l-1];
